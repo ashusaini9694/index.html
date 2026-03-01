@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Colorful Photo Editor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    color:white;
+    text-align:center;
+}
+
+header{
+    padding:20px;
+    font-size:28px;
+    font-weight:bold;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    background:rgba(255,255,255,0.1);
+    padding:20px;
+    border-radius:15px;
+    backdrop-filter: blur(10px);
+}
+
+input[type="file"]{
+    margin:15px 0;
+    padding:10px;
+    background:white;
+    color:black;
+    border-radius:8px;
+}
+
+canvas{
+    max-width:100%;
+    margin-top:20px;
+    border-radius:10px;
+    background:#000;
+}
+
+.controls{
+    margin-top:20px;
+}
+
+.controls label{
+    display:block;
+    margin-top:10px;
+}
+
+button{
+    margin:10px;
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+    background:#ffcc00;
+    font-weight:bold;
+}
+
+button:hover{
+    background:#ffaa00;
+}
+</style>
+</head>
+
+<body>
+
+<header>🎨 Colorful Photo Editor</header>
+
+<div class="container">
+
+<input type="file" id="upload" accept="image/*">
+
+<br>
+
+<canvas id="canvas"></canvas>
+
+<div class="controls">
+
+<label>Brightness</label>
+<input type="range" id="brightness" min="0" max="200" value="100">
+
+<label>Contrast</label>
+<input type="range" id="contrast" min="0" max="200" value="100">
+
+<label>Blur</label>
+<input type="range" id="blur" min="0" max="10" value="0">
+
+<label>Add Watermark Text</label>
+<input type="text" id="watermarkText" placeholder="Enter watermark">
+
+<br>
+
+<button onclick="applyWatermark()">Add Watermark</button>
+<button onclick="downloadImage()">Download Image</button>
+
+</div>
+</div>
+
+<script>
+const upload = document.getElementById("upload");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let img = new Image();
+
+upload.addEventListener("change", function(e){
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(event){
+        img.onload = function(){
+            canvas.width = img.width;
+            canvas.height = img.height;
+            drawImage();
+        }
+        img.src = event.target.result;
+    }
+    reader.readAsDataURL(file);
+});
+
+function drawImage(){
+    const brightness = document.getElementById("brightness").value;
+    const contrast = document.getElementById("contrast").value;
+    const blur = document.getElementById("blur").value;
+
+    ctx.filter = `
+        brightness(${brightness}%)
+        contrast(${contrast}%)
+        blur(${blur}px)
+    `;
+    ctx.drawImage(img,0,0);
+}
+
+document.getElementById("brightness").oninput = drawImage;
+document.getElementById("contrast").oninput = drawImage;
+document.getElementById("blur").oninput = drawImage;
+
+function applyWatermark(){
+    const text = document.getElementById("watermarkText").value;
+    if(!text) return;
+
+    ctx.font = "40px Arial";
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.fillText(text, canvas.width - 250, canvas.height - 30);
+}
+
+function downloadImage(){
+    const link = document.createElement("a");
+    link.download = "edited-image.png";
+    link.href = canvas.toDataURL();
+    link.click();
+}
+</script>
+
+</body>
+</html>
